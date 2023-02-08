@@ -1,6 +1,12 @@
 <?php
+session_start();
 include '../connection.php';
-$query = "SELECT * FROM tbl_action_taken";
+$query = "SELECT * FROM tbl_action_taken
+LEFT JOIN tbl_pivot_cause_action
+ON tbl_action_taken.action_id = tbl_pivot_cause_action.action_taken_id
+LEFT JOIN tbl_cause_of_offline
+ON tbl_cause_of_offline.cause_id = tbl_pivot_cause_action.cause_of_offline_id
+";
 $result = mysqli_query($dbc, $query);
 if (!$result) {
   die('Query Failed' . mysqli_connect_error());
@@ -9,7 +15,7 @@ if (!$result) {
 
 <!--doctype, head, css link, js link & title -->
 <?php include '../layouts/link.php'; ?>
-
+<link rel="stylesheet" href="../alertify/alertify.min.css" />
 <body>
   <!-- navbar -->
   <?php include '../layouts/navbar.php'; ?>
@@ -72,6 +78,7 @@ if (!$result) {
               <tr class="text-white text-center" style="vertical-align:middle">
                 <th>ID</th>
                 <th>CONTENT</th>
+                <th>CAUSE OF OFFLINE</th>
                 <th>DATE CREATED</th>
                 <th>ACTIONS</th>
               </tr>
@@ -84,10 +91,11 @@ if (!$result) {
                   <tr class="text-center">
                     <td><?php echo $data['action_id']; ?></td>
                     <td><?php echo $data['action_taken_name']; ?></td>
+                    <td><?php echo $data['cause_of_offline_name']; ?></td>
                     <td><?php echo date('M d, Y', strtotime($data['date_created'])); ?></td>
                     <td>
-                      <a href="#" class="btn btn-danger btn-sm b-width">Edit</a>
-                      <a href="#" class="btn btn-danger btn-sm b-width ">Delete</a>
+                      <a href="edit.php?id=<?= $data['action_id'] ?>" class="btn btn-danger btn-sm b-width">Edit</a>
+                      <a href="delete.php?id=<?= $data['action_id'] ?>" class="btn btn-danger btn-sm b-width" onclick="return confirm('Are you sure you want to delete this record?')">Delete</a>
                     </td>
                   </tr>
                 <?php
@@ -104,5 +112,20 @@ if (!$result) {
       </main>
     </div>
   </div>
+  <script src="../alertify/alertify.min.js"></script>
+  <script>
+    <?php
+    if (isset($_SESSION['delete'])) { ?>
+      alertify.set('notifier', 'position', 'top-right');
+      alertify.success('<?= $_SESSION['delete'] ?>');
+     <?php } else { ?>
+      alertify.set('notifier', 'position', 'top-right');
+      alertify.success('<?= $_SESSION['success'] ?>');
+  <?php  }
+    unset($_SESSION['delete']);
+    unset($_SESSION['success']);
+    ?>
+  </script>
 </body>
+
 </html>
