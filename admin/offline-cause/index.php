@@ -1,17 +1,23 @@
 <?php
+session_start();
 include '../connection.php';
 $query = "SELECT * FROM tbl_cause_of_offline";
 $result = mysqli_query($dbc, $query);
 if (!$result) {
-    die('Query Failed' . mysqli_connect_error());
+  die('Query Failed' . mysqli_connect_error());
+}
+// SET SESSION VARIABLE FOR DELETE
+if (isset($_SESSION['delete1'])) {
+  $_SESSION["delete1"] = "You Cannot Delete Offline Cause Once it Has Action Taken";
 }
 ?>
 
 <!--doctype, head, css link, js link-->
 <?php include '../layouts/link.php'; ?>
+<link rel="stylesheet" href="../alertify/alertify.min.css" />
 <body>
-<!-- navbar -->
-<?php include '../layouts/navbar.php'; ?>
+  <!-- navbar -->
+  <?php include '../layouts/navbar.php'; ?>
   <div class="container-fluid">
     <div class="row">
       <!--Sidebar -->
@@ -41,14 +47,14 @@ if (!$result) {
                 while ($data = mysqli_fetch_assoc($result)) {
               ?>
                   <tr class="text-center">
-                      <td><?php echo $data['cause_id']; ?></td>
-                      <td><?php echo $data['cause_of_offline_name']; ?></td>
-                      <td><?php echo $data['reason_for_offline_id']; ?></td>
-                      <td><?php echo date('M d, Y', strtotime($data['date_created'])); ?></td>
-                      <td>
+                    <td><?php echo $data['cause_id']; ?></td>
+                    <td><?php echo $data['cause_of_offline_name']; ?></td>
+                    <td><?php echo $data['reason_for_offline_id']; ?></td>
+                    <td><?php echo date('M d, Y', strtotime($data['date_created'])); ?></td>
+                    <td>
                       <a href="edit.php?id=<?php echo $data['cause_id'];?>" class="btn btn-danger btn-sm b-width">Edit</a>
                       <a href="delete.php?id=<?php echo $data['cause_id'];?>" class="btn btn-danger btn-sm b-width">Delete</a>
-                      </td>
+                    </td>
                   </tr>
                 <?php
                 }
@@ -64,6 +70,24 @@ if (!$result) {
       </main>
     </div>
   </div>
+  <script src="../alertify/alertify.min.js"></script>
+  <script>
+    <?php
+    if (isset($_SESSION['delete'])) { ?>
+      alertify.set('notifier', 'position', 'top-right');
+      alertify.success('<?= $_SESSION['delete'] ?>');
+    <?php } elseif (isset($_SESSION['delete1'])) { ?>
+      alertify.set('notifier', 'position', 'top-right');
+      alertify.success('<?= $_SESSION['delete1'] ?>');
+    <?php } else { ?>
+      alertify.set('notifier', 'position', 'top-right');
+      alertify.success('<?= $_SESSION['success'] ?>');
+    <?php  }
+    unset($_SESSION['delete']);
+    unset($_SESSION['delete1']);
+    unset($_SESSION['success']);
+    ?>
+  </script>
 </body>
 
 </html>
